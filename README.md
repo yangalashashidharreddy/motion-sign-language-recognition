@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Phase%203%20%E2%80%93%20Kaggle%20Environment-blueviolet)
+![Status](https://img.shields.io/badge/Status-Phase%205%20%E2%80%93%20Baseline%20Training-brightgreen)
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-red?logo=pytorch&logoColor=white)
 
 **A production-quality, deep-learning-powered system for recognizing sign language gestures from video and motion data.**
@@ -65,7 +65,7 @@ motion-sign-language-recognition/
 | **1** | Project Initialisation | ✅ Complete |
 | **2** | Dataset Exploration | ✅ Complete |
 | **3** | Kaggle Environment Preparation | ✅ Complete |
-| **4** | Baseline Model (CNN + LSTM) | 🔜 Upcoming |
+| **4** | Baseline Model Training (CNN + GRU) | ✅ Complete |
 | **5** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
 | **6** | Real-time Inference & Optimisation | 🔜 Upcoming |
 | **7** | Evaluation, Benchmarking & Docs | 🔜 Upcoming |
@@ -252,6 +252,76 @@ for k, (ok, msg) in cfg.validate().items():
 | Outputs | `/kaggle/working/outputs/` |
 
 > 📖 See [notebooks/kaggle/wlasl_setup.md](notebooks/kaggle/wlasl_setup.md) for the full Kaggle setup guide.
+
+---
+
+## 🏋️‍♂️ Training the Baseline Model
+
+A CNN + GRU baseline is implemented in `src/models/baseline_model.py` and
+trained by `src/training/train.py`.
+
+### Local Training
+
+```bash
+# Train on WLASL100 subset (100 classes)
+python src/training/train.py \
+    --epochs 30 \
+    --batch_size 8 \
+    --num_classes 100 \
+    --num_frames 16 \
+    --lr 1e-4 \
+    --num_workers 2
+
+# Resume from a checkpoint
+python src/training/train.py \
+    --resume outputs/checkpoints/last.pt \
+    --epochs 50
+
+# Evaluate the best checkpoint
+python src/training/evaluate.py \
+    --checkpoint outputs/checkpoints/best.pt
+```
+
+### Kaggle Training
+
+Inside a Kaggle Notebook cell:
+
+```python
+import subprocess, sys, os
+
+# Clone the repo
+REPO = "/kaggle/working/motion-sign-language-recognition"
+if not os.path.exists(REPO):
+    subprocess.run(["git", "clone",
+        "https://github.com/yangalashashidharreddy/motion-sign-language-recognition.git",
+        REPO], check=True)
+sys.path.insert(0, REPO)
+
+# Install extra deps
+subprocess.run(["pip", "install", "rich", "loguru"], check=True)
+
+# Run training (dataset auto-detected at /kaggle/input/wlasl-complete/)
+subprocess.run([
+    "python", "src/training/train.py",
+    "--epochs", "30",
+    "--batch_size", "16",
+    "--num_classes", "100",
+    "--num_frames", "16",
+    "--num_workers", "2",
+], cwd=REPO, check=True)
+```
+
+### Outputs
+
+| File | Description |
+|---|---|
+| `outputs/checkpoints/best.pt` | Checkpoint with the best validation Top-1 |
+| `outputs/checkpoints/last.pt` | Most recent epoch checkpoint |
+| `outputs/checkpoints/label_to_idx.json` | Gloss → class index mapping |
+| `outputs/logs/train.log` | Full training log |
+
+> 📖 See [docs/training.md](docs/training.md) for a complete guide including architecture
+> details, all CLI arguments, frame sampling strategy, and expected accuracy ranges.
 
 ---
 
