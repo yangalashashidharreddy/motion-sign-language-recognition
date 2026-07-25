@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Phase%205%20%E2%80%93%20Baseline%20Training-brightgreen)
+![Status](https://img.shields.io/badge/Status-Phase%205%20%E2%80%93%20MediaPipe%20Landmarks-orange)
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-red?logo=pytorch&logoColor=white)
 
 **A production-quality, deep-learning-powered system for recognizing sign language gestures from video and motion data.**
@@ -66,9 +66,10 @@ motion-sign-language-recognition/
 | **2** | Dataset Exploration | ✅ Complete |
 | **3** | Kaggle Environment Preparation | ✅ Complete |
 | **4** | Baseline Model Training (CNN + GRU) | ✅ Complete |
-| **5** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
-| **6** | Real-time Inference & Optimisation | 🔜 Upcoming |
-| **7** | Evaluation, Benchmarking & Docs | 🔜 Upcoming |
+| **5** | MediaPipe Landmark Extraction | ✅ Complete |
+| **6** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
+| **7** | Real-time Inference & Optimisation | 🔜 Upcoming |
+| **8** | Evaluation, Benchmarking & Docs | 🔜 Upcoming |
 
 ---
 
@@ -322,6 +323,63 @@ subprocess.run([
 
 > 📖 See [docs/training.md](docs/training.md) for a complete guide including architecture
 > details, all CLI arguments, frame sampling strategy, and expected accuracy ranges.
+
+---
+
+## 🖐️ MediaPipe Landmark Extraction
+
+### Installation
+
+```bash
+# Local
+pip install mediapipe
+
+# Kaggle notebook
+!pip install mediapipe
+```
+
+### Extract landmarks (full WLASL100 dataset)
+
+```bash
+python src/landmarks/save_landmarks.py \
+    --fmt npy \
+    --target_length 30 \
+    --splits train val \
+    --max_classes 100
+```
+
+### Extract from a single video (Python)
+
+```python
+from pathlib import Path
+from src.landmarks.hand_detector import HandDetector
+from src.landmarks.landmark_extractor import LandmarkExtractor
+from src.landmarks.landmark_sequence import LandmarkSequenceBuilder
+
+with HandDetector(max_num_hands=2) as det:
+    ext = LandmarkExtractor(det)
+    builder = LandmarkSequenceBuilder(ext, target_length=30)
+    seq = builder.build_from_video(
+        Path("data/raw/videos/00001.mp4"),
+        video_id="00001", label="book",
+    )
+print(seq.sequence.shape)  # (30, 2, 21, 3)
+```
+
+### Expected output structure
+
+```
+data/processed/
+├── manifest.csv
+├── train/
+│   ├── 00001_book.npy        ← (T, 2, 21, 3) float32
+│   └── ...
+└── val/
+    └── ...
+```
+
+> 📖 See [docs/mediapipe_pipeline.md](docs/mediapipe_pipeline.md) for the full pipeline guide,
+> landmark format reference, normalisation utilities, and Kaggle instructions.
 
 ---
 
