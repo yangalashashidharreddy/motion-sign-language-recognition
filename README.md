@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Phase%202%20%E2%80%93%20Dataset%20Exploration-blue)
+![Status](https://img.shields.io/badge/Status-Phase%203%20%E2%80%93%20Kaggle%20Environment-blueviolet)
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-red?logo=pytorch&logoColor=white)
 
 **A production-quality, deep-learning-powered system for recognizing sign language gestures from video and motion data.**
@@ -64,10 +64,11 @@ motion-sign-language-recognition/
 |-------|-------|--------|
 | **1** | Project Initialisation | ✅ Complete |
 | **2** | Dataset Exploration | ✅ Complete |
-| **3** | Baseline Model (CNN + LSTM) | 🔜 Upcoming |
-| **4** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
-| **5** | Real-time Inference & Optimisation | 🔜 Upcoming |
-| **6** | Evaluation, Benchmarking & Docs | 🔜 Upcoming |
+| **3** | Kaggle Environment Preparation | ✅ Complete |
+| **4** | Baseline Model (CNN + LSTM) | 🔜 Upcoming |
+| **5** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
+| **6** | Real-time Inference & Optimisation | 🔜 Upcoming |
+| **7** | Evaluation, Benchmarking & Docs | 🔜 Upcoming |
 
 ---
 
@@ -186,6 +187,71 @@ python src/dataset/video_info.py --all --limit 50
 Prints: FPS, resolution, duration, codec (FourCC), total frames, and matched annotation metadata (gloss, split, signer).
 
 > 📖 See [docs/dataset_analysis.md](docs/dataset_analysis.md) for a full breakdown of the WLASL annotation format and known caveats.
+
+---
+
+## 💻 Development Environments
+
+This project supports two environments with **zero code changes**.
+All paths are resolved automatically by `src/dataset/dataset_config.py`.
+
+### Local Development
+
+```bash
+# After placing the dataset in data/raw/ (see Dataset Setup above)
+python -c "
+from src.dataset.dataset_config import DatasetConfig
+cfg = DatasetConfig()
+for k, (ok, msg) in cfg.validate().items():
+    print(f'  {\"✔\" if ok else \"✘\"}  {k}: {msg}')
+"
+```
+
+| Path | Value |
+|---|---|
+| Raw data | `data/raw/` |
+| Annotation JSON | `data/raw/WLASL_v0.3.json` |
+| Videos | `data/raw/videos/` |
+| Outputs | `outputs/` |
+
+### Kaggle Training Workflow
+
+1. **Attach the WLASL dataset** to your Kaggle Notebook:
+   - Search for **"WLASL Complete"** in the Kaggle dataset panel and click **Add**.
+   - It mounts at `/kaggle/input/wlasl-complete/`.
+
+2. **Clone this repository** inside your notebook:
+   ```python
+   import subprocess, sys, os
+   REPO = "/kaggle/working/motion-sign-language-recognition"
+   subprocess.run(["git", "clone",
+       "https://github.com/yangalashashidharreddy/motion-sign-language-recognition.git",
+       REPO], check=True)
+   sys.path.insert(0, REPO)
+   ```
+
+3. **Auto-detect config** — no changes needed:
+   ```python
+   from src.dataset.dataset_config import DatasetConfig
+   cfg = DatasetConfig()     # detects Kaggle automatically
+   print(cfg.is_kaggle)      # True
+   print(cfg.annotation_file) # /kaggle/input/wlasl-complete/WLASL_v0.3.json
+   ```
+
+4. **Override paths** with environment variables if needed:
+   ```bash
+   export KAGGLE_DATASET_SLUG="my-custom-wlasl"
+   export WLASL_OUTPUT_DIR="/kaggle/working/my-outputs"
+   ```
+
+| Path | Kaggle Value |
+|---|---|
+| Raw data | `/kaggle/input/wlasl-complete/` |
+| Annotation JSON | `/kaggle/input/wlasl-complete/WLASL_v0.3.json` |
+| Videos | `/kaggle/input/wlasl-complete/videos/` |
+| Outputs | `/kaggle/working/outputs/` |
+
+> 📖 See [notebooks/kaggle/wlasl_setup.md](notebooks/kaggle/wlasl_setup.md) for the full Kaggle setup guide.
 
 ---
 
