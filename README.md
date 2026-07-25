@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Phase%201%20%E2%80%93%20Initialized-orange)
+![Status](https://img.shields.io/badge/Status-Phase%202%20%E2%80%93%20Dataset%20Exploration-blue)
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-red?logo=pytorch&logoColor=white)
 
 **A production-quality, deep-learning-powered system for recognizing sign language gestures from video and motion data.**
@@ -63,7 +63,7 @@ motion-sign-language-recognition/
 | Phase | Title | Status |
 |-------|-------|--------|
 | **1** | Project Initialisation | ✅ Complete |
-| **2** | Data Pipeline & Preprocessing | 🔜 Upcoming |
+| **2** | Dataset Exploration | ✅ Complete |
 | **3** | Baseline Model (CNN + LSTM) | 🔜 Upcoming |
 | **4** | Advanced Models (GNN, Transformer) | 🔜 Upcoming |
 | **5** | Real-time Inference & Optimisation | 🔜 Upcoming |
@@ -114,6 +114,78 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+---
+
+## 📦 Dataset Setup (WLASL)
+
+> The dataset is **not** included in the repository. You must obtain it separately.
+
+### Download
+
+1. Visit the official WLASL homepage: **https://dxli94.github.io/WLASL/**
+2. Complete the data request form and download:
+   - `WLASL_v0.3.json` — annotation file
+   - `videos.zip` — video archive
+3. Extract and place files in the structure below.
+
+### Directory layout
+
+```
+data/
+└── raw/
+    ├── WLASL_v0.3.json      ← annotation file
+    └── videos/
+        ├── 00001.mp4
+        ├── 00002.mp4
+        └── ...
+```
+
+> `data/raw/*` is excluded from version control via `.gitignore`.
+> Only `.gitkeep` placeholder files are tracked.
+
+---
+
+## 🔍 Dataset Exploration Scripts
+
+Once the dataset is in place, run the following scripts to explore it:
+
+### 1. High-level overview
+
+```bash
+python src/dataset/explore_dataset.py
+```
+
+Prints: number of classes, total videos, average videos per class, train/val/test split, and sample gloss labels.
+
+### 2. Deep annotation analysis
+
+```bash
+# Default: top 10 classes
+python src/dataset/explore_annotations.py
+
+# Custom: top 20 classes, custom annotation path
+python src/dataset/explore_annotations.py --top 20 --json data/raw/WLASL_v0.3.json
+```
+
+Prints: per-class video counts, signer distribution, source breakdown, frame-length statistics, and bounding-box coverage.
+
+### 3. Video metadata inspector
+
+```bash
+# Inspect a single video file
+python src/dataset/video_info.py --video data/raw/videos/00001.mp4
+
+# Inspect by WLASL video ID
+python src/dataset/video_info.py --id 00001
+
+# Batch summary of first 50 videos
+python src/dataset/video_info.py --all --limit 50
+```
+
+Prints: FPS, resolution, duration, codec (FourCC), total frames, and matched annotation metadata (gloss, split, signer).
+
+> 📖 See [docs/dataset_analysis.md](docs/dataset_analysis.md) for a full breakdown of the WLASL annotation format and known caveats.
 
 ---
 
